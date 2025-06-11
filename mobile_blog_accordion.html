@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Blog - Animated Accordions</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --hover-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .blog-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .blog-title {
+            position: relative;
+            z-index: 2;
+            font-weight: 700;
+            font-size: 2.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .blog-subtitle {
+            position: relative;
+            z-index: 2;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .blog-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 20px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            position: relative;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+
+        .card-header-custom {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: none;
+            padding: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .card-header-custom:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+
+        .card-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .card-meta {
+            color: #6c757d;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .card-meta i {
+            color: #667eea;
+        }
+
+        .arrow-icon {
+            position: absolute;
+            right: 1.5rem;
+            top: 50%;
+            transform: translateY(-50%) rotate(0deg);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+
+        .arrow-icon.rotated {
+            transform: translateY(-50%) rotate(90deg);
+            color: #764ba2;
+        }
+
+        .card-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%, #ffffff 100%);
+        }
+
+        .card-content.expanded {
+            max-height: 1000px;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+        }
+
+        .card-content-inner {
+            padding-top: 1rem;
+            border-top: 2px solid #e9ecef;
+            margin-top: 1rem;
+        }
+
+        .content-text {
+            color: #495057;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .content-tags {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .tag {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .read-more-btn {
+            background: var(--primary-gradient);
+            border: none;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .read-more-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .read-more-btn:hover::before {
+            left: 100%;
+        }
+
+        .read-more-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+            color: white;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 576px) {
+            .blog-title {
+                font-size: 2rem;
+            }
+            
+            .card-header-custom {
+                padding: 1rem;
+            }
+            
+            .arrow-icon {
+                right: 1rem;
+            }
+            
+            .card-content.expanded {
+                padding: 0 1rem 1rem 1rem;
+            }
+        }
+
+        /* Pulse animation for new posts */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .new-post {
+            animation: pulse 2s infinite;
+        }
+
+        .new-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: #ff6b6b;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="blog-header">
+        <div class="container">
+            <div class="text-center">
+                <h1 class="blog-title">My Tech Blog</h1>
+                <p class="blog-subtitle">Exploring the latest in web development and design</p>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Blog Post 1 -->
+        <div class="blog-card new-post" data-post="1">
+            <div class="new-badge">NEW</div>
+            <div class="card-header-custom" onclick="toggleCard(1)">
+                <h3 class="card-title">Building Responsive Web Apps with CSS Grid</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> June 10, 2025</span>
+                    <span><i class="fas fa-user"></i> Sarah Johnson</span>
+                    <span><i class="fas fa-clock"></i> 5 min read</span>
+                </div>
+                <i class="fas fa-chevron-right arrow-icon" id="arrow-1"></i>
+            </div>
+            <div class="card-content" id="content-1">
+                <div class="card-content-inner">
+                    <p class="content-text">
+                        CSS Grid has revolutionized the way we approach web layouts. In this comprehensive guide, we'll explore how to create truly responsive designs that work seamlessly across all devices. From basic grid concepts to advanced techniques like subgrid and container queries.
+                    </p>
+                    <p class="content-text">
+                        We'll cover practical examples including dashboard layouts, card grids, and complex magazine-style designs. You'll learn how to combine CSS Grid with Flexbox for maximum layout flexibility and discover performance optimization tips.
+                    </p>
+                    <div class="content-tags">
+                        <span class="tag">CSS</span>
+                        <span class="tag">Web Design</span>
+                        <span class="tag">Responsive</span>
+                        <span class="tag">Grid</span>
+                    </div>
+                    <button class="read-more-btn">Read Full Article</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Post 2 -->
+        <div class="blog-card" data-post="2">
+            <div class="card-header-custom" onclick="toggleCard(2)">
+                <h3 class="card-title">JavaScript Performance Optimization in 2025</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> June 8, 2025</span>
+                    <span><i class="fas fa-user"></i> Mike Chen</span>
+                    <span><i class="fas fa-clock"></i> 8 min read</span>
+                </div>
+                <i class="fas fa-chevron-right arrow-icon" id="arrow-2"></i>
+            </div>
+            <div class="card-content" id="content-2">
+                <div class="card-content-inner">
+                    <p class="content-text">
+                        Modern JavaScript applications demand peak performance. This article dives deep into the latest optimization techniques, from bundle splitting and tree shaking to advanced browser APIs that can supercharge your applications.
+                    </p>
+                    <p class="content-text">
+                        Learn about Web Workers, Service Workers, and the new Compression Streams API. We'll also explore memory management, garbage collection optimization, and how to leverage the latest V8 engine improvements.
+                    </p>
+                    <div class="content-tags">
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Performance</span>
+                        <span class="tag">Optimization</span>
+                        <span class="tag">Web APIs</span>
+                    </div>
+                    <button class="read-more-btn">Read Full Article</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Post 3 -->
+        <div class="blog-card" data-post="3">
+            <div class="card-header-custom" onclick="toggleCard(3)">
+                <h3 class="card-title">The Future of Web Design: AI and Automation</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> June 5, 2025</span>
+                    <span><i class="fas fa-user"></i> Emily Rodriguez</span>
+                    <span class="text-warning"><i class="fas fa-star"></i> Featured</span>
+                </div>
+                <i class="fas fa-chevron-right arrow-icon" id="arrow-3"></i>
+            </div>
+            <div class="card-content" id="content-3">
+                <div class="card-content-inner">
+                    <p class="content-text">
+                        Artificial Intelligence is transforming web design workflows. From automated A/B testing to AI-generated layouts, discover how designers and developers are leveraging machine learning to create better user experiences.
+                    </p>
+                    <p class="content-text">
+                        We'll explore tools like GitHub Copilot for CSS, AI-powered design systems, and predictive UX optimization. Plus, learn about the ethical considerations and human creativity's irreplaceable role in design.
+                    </p>
+                    <div class="content-tags">
+                        <span class="tag">AI</span>
+                        <span class="tag">Design</span>
+                        <span class="tag">Automation</span>
+                        <span class="tag">Future Tech</span>
+                    </div>
+                    <button class="read-more-btn">Read Full Article</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Post 4 -->
+        <div class="blog-card" data-post="4">
+            <div class="card-header-custom" onclick="toggleCard(4)">
+                <h3 class="card-title">Mobile-First Design Principles That Actually Work</h3>
+                <div class="card-meta">
+                    <span><i class="fas fa-calendar"></i> June 2, 2025</span>
+                    <span><i class="fas fa-user"></i> David Kim</span>
+                    <span><i class="fas fa-clock"></i> 6 min read</span>
+                </div>
+                <i class="fas fa-chevron-right arrow-icon" id="arrow-4"></i>
+            </div>
+            <div class="card-content" id="content-4">
+                <div class="card-content-inner">
+                    <p class="content-text">
+                        With mobile traffic dominating the web, mobile-first design isn't just a trend—it's essential. This guide covers proven strategies for creating mobile experiences that users love, from touch-friendly interfaces to performance optimization.
+                    </p>
+                    <p class="content-text">
+                        Discover the psychology behind mobile user behavior, learn about progressive enhancement techniques, and master the art of thumb-friendly navigation. We'll also cover testing strategies and common mobile UX pitfalls to avoid.
+                    </p>
+                    <div class="content-tags">
+                        <span class="tag">Mobile</span>
+                        <span class="tag">UX Design</span>
+                        <span class="tag">Responsive</span>
+                        <span class="tag">Touch UI</span>
+                    </div>
+                    <button class="read-more-btn">Read Full Article</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleCard(cardNumber) {
+            const content = document.getElementById(`content-${cardNumber}`);
+            const arrow = document.getElementById(`arrow-${cardNumber}`);
+            
+            // Close all other cards
+            for (let i = 1; i <= 4; i++) {
+                if (i !== cardNumber) {
+                    const otherContent = document.getElementById(`content-${i}`);
+                    const otherArrow = document.getElementById(`arrow-${i}`);
+                    otherContent.classList.remove('expanded');
+                    otherArrow.classList.remove('rotated');
+                }
+            }
+            
+            // Toggle current card
+            content.classList.toggle('expanded');
+            arrow.classList.toggle('rotated');
+            
+            // Add smooth scroll to card if opening
+            if (content.classList.contains('expanded')) {
+                setTimeout(() => {
+                    document.querySelector(`[data-post="${cardNumber}"]`).scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }, 100);
+            }
+        }
+
+        // Add some interactive enhancements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add hover effects to cards
+            const cards = document.querySelectorAll('.blog-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px) scale(1.02)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0) scale(1)';
+                });
+            });
+
+            // Add click animation to read more buttons
+            const readMoreBtns = document.querySelectorAll('.read-more-btn');
+            readMoreBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // Create ripple effect
+                    const ripple = document.createElement('span');
+                    ripple.style.position = 'absolute';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'rgba(255,255,255,0.6)';
+                    ripple.style.transform = 'scale(0)';
+                    ripple.style.animation = 'ripple 0.6s linear';
+                    ripple.style.left = (e.clientX - e.target.offsetLeft) + 'px';
+                    ripple.style.top = (e.clientY - e.target.offsetTop) + 'px';
+                    ripple.style.width = ripple.style.height = '20px';
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+
+        // Add CSS for ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

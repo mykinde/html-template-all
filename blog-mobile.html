@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile-First Blog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="blog-list-container" class="container-fluid py-3">
+        <div class="row row-cols-1 g-4">
+            <div class="col">
+                <div class="card h-100 shadow-sm blog-card" data-post-id="1">
+                    <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Blog Post Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Blog Post Title 1</h5>
+                        <p class="card-text text-muted small">Category | Date</p>
+                        <p class="card-text">A short summary of the blog post content...</p>
+                        <button class="btn btn-primary btn-sm view-post-btn">Read More <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="card h-100 shadow-sm blog-card" data-post-id="2">
+                    <img src="https://via.placeholder.com/400x200" class="card-img-top" alt="Blog Post Image">
+                    <div class="card-body">
+                        <h5 class="card-title">Blog Post Title 2</h5>
+                        <p class="card-text text-muted small">Category | Date</p>
+                        <p class="card-text">Another short summary of the blog post content...</p>
+                        <button class="btn btn-primary btn-sm view-post-btn">Read More <i class="bi bi-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+            </div>
+    </div>
+
+    <div id="blog-detail-container" class="container-fluid blog-detail-view position-fixed top-0 start-100 h-100 bg-light overflow-auto p-3">
+        <button id="close-detail-btn" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Back to Posts</button>
+        <h2 id="detail-post-title"></h2>
+        <p id="detail-post-meta" class="text-muted small"></p>
+        <img id="detail-post-image" src="" class="img-fluid mb-3" alt="Blog Post Image">
+        <div id="detail-post-content">
+            </div>
+    </div>
+
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">Navigation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#"><i class="bi bi-house"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-info-circle"></i> About</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-tag"></i> Categories
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#">Technology</a></li>
+                        <li><a class="dropdown-item" href="#">Travel</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Lifestyle</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="bi bi-envelope"></i> Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <nav class="navbar navbar-light bg-light fixed-top shadow-sm">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a class="navbar-brand me-auto" href="#">My Blog</a>
+        </div>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+
+<style>
+/* General body padding to account for fixed navbar */
+body {
+    padding-top: 56px; /* Adjust based on your navbar height */
+    overflow-x: hidden; /* Prevent horizontal scrollbar during transitions */
+}
+
+/* Blog Detail View Styling */
+.blog-detail-view {
+    z-index: 1050; /* Ensure it's above other content */
+    transition: transform 0.3s ease-out; /* Smooth transition for swiping */
+    width: 100%; /* Full width on mobile */
+}
+
+.blog-detail-view.active {
+    transform: translateX(-100%); /* Swipes in from right to cover the screen */
+}
+
+/* Optional: Styling for cards */
+.blog-card {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.blog-card:hover {
+    transform: translateY(-5px);
+}
+</style>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const blogListContainer = document.getElementById('blog-list-container');
+    const blogDetailContainer = document.getElementById('blog-detail-container');
+    const closeDetailBtn = document.getElementById('close-detail-btn');
+
+    const detailPostTitle = document.getElementById('detail-post-title');
+    const detailPostMeta = document.getElementById('detail-post-meta');
+    const detailPostImage = document.getElementById('detail-post-image');
+    const detailPostContent = document.getElementById('detail-post-content');
+
+    // Dummy content for demonstration (replace with actual data fetching)
+    const blogPosts = {
+        1: {
+            title: "Exploring the Future of AI",
+            meta: "Technology | June 10, 2025",
+            image: "https://via.placeholder.com/800x400/add8e6/000000?text=AI+Future",
+            content: "<p>Artificial intelligence continues to advance at an unprecedented pace, transforming various industries and aspects of daily life. From machine learning algorithms to neural networks, the capabilities of AI are expanding rapidly.</p><p>This post delves into the latest breakthroughs, ethical considerations, and potential societal impacts of this revolutionary technology. We'll examine how AI is being applied in healthcare, finance, and autonomous systems, and what the future may hold.</p>"
+        },
+        2: {
+            title: "A Culinary Journey Through Lagos",
+            meta: "Lifestyle | June 5, 2025",
+            image: "https://via.placeholder.com/800x400/90ee90/000000?text=Lagos+Food",
+            content: "<p>Lagos, a vibrant metropolis in Nigeria, is a melting pot of cultures and flavors. Its culinary scene is as diverse as its population, offering everything from traditional Nigerian dishes to international gourmet experiences.</p><p>Join us on a gastronomic adventure as we explore the bustling street food markets, upscale restaurants, and hidden culinary gems that make Lagos a food lover's paradise. Discover local delicacies like Jollof Rice, Suya, and Efo Riro.</p>"
+        }
+        // Add more blog post content here
+    };
+
+    // Function to load and display blog post details
+    function showBlogPost(postId) {
+        const post = blogPosts[postId];
+        if (post) {
+            detailPostTitle.textContent = post.title;
+            detailPostMeta.textContent = post.meta;
+            detailPostImage.src = post.image;
+            detailPostContent.innerHTML = post.content;
+            blogDetailContainer.classList.add('active'); // Swipes in
+        }
+    }
+
+    // Event listener for clicking on blog cards
+    document.querySelectorAll('.blog-card').forEach(card => {
+        card.addEventListener('click', (e) => {
+            // Ensure click is on the card itself, not just the button
+            if (!e.target.classList.contains('view-post-btn')) {
+                const postId = card.dataset.postId;
+                showBlogPost(postId);
+            }
+        });
+    });
+
+    // Event listener for "Read More" buttons
+    document.querySelectorAll('.view-post-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            e.stopPropagation(); // Prevent card click event from firing
+            const postId = button.closest('.blog-card').dataset.postId;
+            showBlogPost(postId);
+        });
+    });
+
+
+    // Event listener for closing the detail view
+    closeDetailBtn.addEventListener('click', () => {
+        blogDetailContainer.classList.remove('active'); // Swipes out
+    });
+
+    // *******************************************************
+    // SWIPE FUNCTIONALITY (Conceptual - Requires a library or more complex logic)
+    // *******************************************************
+
+    // For the blog post detail swipe (right-to-left to open, left-to-right to close)
+    let startXDetail = 0;
+    let currentXDetail = 0;
+    let isSwipingDetail = false;
+
+    blogDetailContainer.addEventListener('touchstart', (e) => {
+        startXDetail = e.touches[0].clientX;
+        isSwipingDetail = true;
+    });
+
+    blogDetailContainer.addEventListener('touchmove', (e) => {
+        if (!isSwipingDetail) return;
+        currentXDetail = e.touches[0].clientX;
+        const diffX = currentXDetail - startXDetail;
+
+        // Allow swiping only if the detail view is active and moving to the right (closing)
+        if (blogDetailContainer.classList.contains('active') && diffX > 0) {
+            blogDetailContainer.style.transform = `translateX(calc(-100% + ${diffX}px))`;
+        }
+    });
+
+    blogDetailContainer.addEventListener('touchend', () => {
+        if (!isSwipingDetail) return;
+        const diffX = currentXDetail - startXDetail;
+
+        // If swiped significantly to the right, close the detail view
+        if (diffX > 70) { // Threshold for closing
+            blogDetailContainer.classList.remove('active');
+            blogDetailContainer.style.transform = ''; // Reset transform
+        } else if (blogDetailContainer.classList.contains('active')) {
+            // Snap back if not swiped enough to close
+            blogDetailContainer.style.transform = 'translateX(-100%)';
+        } else {
+            // If not active and trying to swipe in, don't do anything
+            blogDetailContainer.style.transform = '';
+        }
+        isSwipingDetail = false;
+    });
+
+    // For the navigation menu swipe (left-to-right to open, right-to-left to close)
+    // Bootstrap's Offcanvas component handles its own swipe gestures for closing.
+    // To open it with a swipe, you'd need more involved touch event handling on the main content area.
+    // For simplicity, it's recommended to rely on the navbar toggler for opening the Offcanvas.
+    // If you *must* have a swipe-to-open, you'd listen for `touchstart` on `blogListContainer`
+    // and if the swipe is from the left edge and moves right, then programmatically open the offcanvas:
+    // const offcanvasNavbar = new bootstrap.Offcanvas(document.getElementById('offcanvasNavbar'));
+    // offcanvasNavbar.show();
+});
+</script>

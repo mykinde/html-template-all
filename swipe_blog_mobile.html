@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Blog - Mobile Swipe Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #007aff;
+            --secondary-color: #34c759;
+            --danger-color: #ff3b30;
+            --warning-color: #ff9500;
+            --text-primary: #000000;
+            --text-secondary: #8e8e93;
+            --background-primary: #ffffff;
+            --background-secondary: #f2f2f7;
+            --border-color: #c6c6c8;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-secondary);
+            margin: 0;
+            overflow-x: hidden;
+            position: relative;
+            min-height: 100vh;
+        }
+
+        /* App Container */
+        .app-container {
+            position: relative;
+            width: 100%;
+            min-height: 100vh;
+            background: var(--background-secondary);
+        }
+
+        /* Navigation Overlay */
+        .nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+        }
+
+        .nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Side Navigation */
+        .side-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background: var(--background-primary);
+            z-index: 999;
+            transform: translateX(-100%);
+            transition: var(--transition);
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            overflow-y: auto;
+        }
+
+        .side-nav.active {
+            transform: translateX(0);
+        }
+
+        .nav-header {
+            padding: 2rem 1.5rem 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), #5856d6);
+            color: white;
+            position: relative;
+        }
+
+        .nav-header h3 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+
+        .nav-header p {
+            margin: 0.5rem 0 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .nav-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .nav-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: var(--transition);
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-item:hover {
+            background: var(--background-secondary);
+            color: var(--primary-color);
+        }
+
+        .nav-item i {
+            margin-right: 1rem;
+            width: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+
+        .nav-item:hover i {
+            color: var(--primary-color);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            transition: var(--transition);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .main-content.nav-open {
+            transform: translateX(280px);
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: var(--background-primary);
+            padding: 1rem;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .menu-btn:hover {
+            background: var(--background-secondary);
+        }
+
+        .top-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary);
+        }
+
+        .search-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .search-btn:hover {
+            background: var(--background-secondary);
+            color: var(--primary-color);
+        }
+
+        /* Blog List View */
+        .blog-list {
+            padding: 1rem;
+            transform: translateX(0);
+            transition: var(--transition);
+        }
+
+        .blog-list.slide-left {
+            transform: translateX(-100%);
+        }
+
+        /* Blog Cards */
+        .blog-card {
+            background: var(--background-primary);
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .blog-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .blog-card:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        .card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, var(--primary-color), #5856d6);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .card-category {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .card-content {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .card-excerpt {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin: 0 0 1rem;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .card-author {
+            display: flex;
+            align-items: center;
+        }
+
+        .author-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            margin-right: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .card-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-stats span {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* Article View */
+        .article-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            min-height: 100vh;
+            background: var(--background-primary);
+            transform: translateX(100%);
+            transition: var(--transition);
+            z-index: 20;
+            overflow-y: auto;
+        }
+
+        .article-view.active {
+            transform: translateX(0);
+        }
+
+        .article-header {
+            position: sticky;
+            top: 0;
+            background: var(--background-primary);
+            box-shadow: var(--shadow);
+            z-index: 21;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .back-btn:hover {
+            background: var(--background-secondary);
+        }
+
+        .article-title-header {
+            flex: 1;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .share-btn {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .share-btn:hover {
+            background: var(--background-secondary);
+            color: var(--primary-color);
+        }
+
+        .article-content {
+            padding: 0 1rem 2rem;
+        }
+
+        .article-hero {
+            width: 100%;
+            height: 250px;
+            background: linear-gradient(135deg, var(--primary-color), #5856d6);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .article-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .article-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: var(--text-primary);
+            margin: 0 0 1rem;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .article-text {
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .article-text h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin: 2rem 0 1rem;
+            color: var(--text-primary);
+        }
+
+        .article-text p {
+            margin-bottom: 1.5rem;
+        }
+
+        .article-text ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        .article-text li {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Loading States */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 576px) {
+            .side-nav {
+                width: 100%;
+            }
+            
+            .main-content.nav-open {
+                transform: translateX(100%);
+            }
+            
+            .card-content {
+                padding: 1rem;
+            }
+            
+            .article-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Touch feedback */
+        .btn-feedback {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-feedback::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+
+        .btn-feedback:active::after {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navigation Overlay -->
+        <div class="nav-overlay" onclick="closeNav()"></div>
+        
+        <!-- Side Navigation -->
+        <nav class="side-nav" id="sideNav">
+            <div class="nav-header">
+                <button class="nav-close" onclick="closeNav()">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h3>Tech Blog</h3>
+                <p>Stay updated with latest trends</p>
+            </div>
+            <div class="nav-menu">
+                <a href="#" class="nav-item">
+                    <i class="fas fa-home"></i>
+                    <span>Home</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-fire"></i>
+                    <span>Trending</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-bookmark"></i>
+                    <span>Bookmarks</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>About</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content" id="mainContent">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <button class="menu-btn btn-feedback" onclick="openNav()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="top-title">Latest Articles</h1>
+                <button class="search-btn btn-feedback">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+
+            <!-- Blog List -->
+            <div class="blog-list" id="blogList">
+                <!-- Blog Card 1 -->
+                <div class="blog-card" onclick="openArticle(1)">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="CSS Grid">
+                        <div class="card-category">Web Dev</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Building Responsive Web Apps with CSS Grid</h3>
+                        <p class="card-excerpt">Discover how CSS Grid revolutionizes web layouts and learn to create truly responsive designs that work seamlessly across all devices.</p>
+                        <div class="card-meta">
+                            <div class="card-author">
+                                <div class="author-avatar">SJ</div>
+                                <span>Sarah Johnson</span>
+                            </div>
+                            <div class="card-stats">
+                                <span><i class="fas fa-clock"></i> 5 min</span>
+                                <span><i class="fas fa-heart"></i> 234</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blog Card 2 -->
+                <div class="blog-card" onclick="openArticle(2)">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="JavaScript Performance">
+                        <div class="card-category">JavaScript</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">JavaScript Performance Optimization in 2025</h3>
+                        <p class="card-excerpt">Modern JavaScript applications demand peak performance. Learn the latest optimization techniques and browser APIs.</p>
+                        <div class="card-meta">
+                            <div class="card-author">
+                                <div class="author-avatar">MC</div>
+                                <span>Mike Chen</span>
+                            </div>
+                            <div class="card-stats">
+                                <span><i class="fas fa-clock"></i> 8 min</span>
+                                <span><i class="fas fa-heart"></i> 187</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blog Card 3 -->
+                <div class="blog-card" onclick="openArticle(3)">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="AI Design">
+                        <div class="card-category">AI</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">The Future of Web Design: AI and Automation</h3>
+                        <p class="card-excerpt">Artificial Intelligence is transforming web design workflows. Discover how AI is revolutionizing the industry.</p>
+                        <div class="card-meta">
+                            <div class="card-author">
+                                <div class="author-avatar">ER</div>
+                                <span>Emily Rodriguez</span>
+                            </div>
+                            <div class="card-stats">
+                                <span><i class="fas fa-clock"></i> 6 min</span>
+                                <span><i class="fas fa-heart"></i> 156</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blog Card 4 -->
+                <div class="blog-card" onclick="openArticle(4)">
+                    <div class="card-image">
+                        <img src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Mobile Design">
+                        <div class="card-category">Mobile</div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">Mobile-First Design Principles That Actually Work</h3>
+                        <p class="card-excerpt">With mobile traffic dominating the web, mobile-first design isn't just a trend—it's essential for success.</p>
+                        <div class="card-meta">
+                            <div class="card-author">
+                                <div class="author-avatar">DK</div>
+                                <span>David Kim</span>
+                            </div>
+                            <div class="card-stats">
+                                <span><i class="fas fa-clock"></i> 7 min</span>
+                                <span><i class="fas fa-heart"></i> 203</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article View -->
+            <div class="article-view" id="articleView">
+                <div class="article-header">
+                    <button class="back-btn btn-feedback" onclick="closeArticle()">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <h2 class="article-title-header" id="articleTitleHeader">Article Title</h2>
+                    <button class="share-btn btn-feedback" onclick="shareArticle()">
+                        <i class="fas fa-share"></i>
+                    </button>
+                </div>
+                <div class="article-content" id="articleContent">
+                    <!-- Article content will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Navigation functions
+        function openNav() {
+            document.getElementById('sideNav').classList.add('active');
+            document.querySelector('.nav-overlay').classList.add('active');
+            document.getElementById('mainContent').classList.add('nav-open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeNav() {
+            document.getElementById('sideNav').classList.remove('active');
+            document.querySelector('.nav-overlay').classList.remove('active');
+            document.getElementById('mainContent').classList.remove('nav-open');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Article data
+        const articles = {
+            1: {
+                title: "Building Responsive Web Apps with CSS Grid",
+                author: "Sarah Johnson",
+                date: "June 10, 2025",
+                readTime: "5 min read",
+                image: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                content: `
+                    <div class="article-hero">
+                        <img src="https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="CSS Grid">
+                    </div>
+                    <h1 class="article-title">Building Responsive Web Apps with CSS Grid</h1>
+                    <div class="article-meta">
+                        <span><i class="fas fa-user"></i> Sarah Johnson</span>
+                        <span><i class="fas fa-calendar"></i> June 10, 2025</span>
+                        <span><i class="fas fa-clock"></i> 5 min read</span>
+                    </div>
+                    <div class="article-text">
+                        <p>CSS Grid has revolutionized the way we approach web layouts. In this comprehensive guide, we'll explore how to create truly responsive designs that work seamlessly across all devices.</p>
+                        
+                        <h3>Why CSS Grid Matters</h3>
+                        <p>Traditional layout methods like floats and positioning have served us well, but they were never designed for the complex, responsive layouts we need today. CSS Grid provides:</p>
+                        
+                        <ul>
+                            <li>Two-dimensional layout control</li>
+                            <li>Intuitive responsive design patterns</li>
+                            <li>Cleaner, more semantic HTML</li>
+                            <li>Better browser performance</li>
+                        </ul>
+                        
+                        <h3>Getting Started</h3>
+                        <p>The foundation of CSS Grid is simple. You define a grid container and specify how you want your grid tracks (rows and columns) to behave:</p>
+                        
+                        <p>Modern web applications require layouts that adapt fluidly to different screen sizes and orientations. CSS Grid's intrinsic responsiveness makes it the perfect tool for this challenge.</p>
+                        
+                        <h3>Advanced Techniques</h3>
+                        <p>Once you've mastered the basics, CSS Grid offers powerful features like named grid lines, grid areas, and implicit grid behavior that can handle even the most complex layouts with ease.</p>
+                        
+                        <p>The future of web layout is here, and it's more powerful and intuitive than ever before. Start incorporating CSS Grid into your projects today and experience the difference it makes.</p>
+                    </div>
+                `
+            },
+            2: {
+                title: "JavaScript Performance Optimization in 2025",
+                author: "Mike Chen",
+                date: "June 8, 2025",
+                readTime: "8 min read",
+                image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                content: `
+                    <div class="article-hero">
+                        <img src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="JavaScript Performance">
+                    </div>
+                    <h1 class="article-title">JavaScript Performance Optimization in 2025</h1>
+                    <div class="article-meta">
+                        <span><i class="fas fa-user"></i> Mike Chen</span>
+                        <span><i class="fas fa-calendar"></i> June 8, 2025</span>
+                        <span><i class="fas fa-clock"></i> 8 min read</span>
+                    </div>
+                    <div class="article-text">
+                        <p>Modern JavaScript applications are more complex than ever, and with that complexity comes the need for sophisticated performance optimization strategies.</p>
+                        
+                        <h3>Core Performance Principles</h3>
+                        <p>Performance optimization starts with understanding how JavaScript engines work and what causes bottlenecks in your applications:</p>
+                        
+                        <ul>
+                            <li>Minimize bundle sizes with tree shaking</li>
+                            <li>Leverage browser caching strategies</li>
+                            <li>Optimize critical rendering paths</li>
+                            <li>Use Web Workers for heavy computations</li>
+                        </ul>
+                        
+                        <h3>Modern Browser APIs</h3>
+                        <p>2025 brings new opportunities with advanced browser APIs that can significantly boost your application's performance when used correctly.</p>
+                        
+                        <p>Understanding memory management and garbage collection patterns is crucial for building applications that remain performant as they scale.</p>
+                        
+                        <h3>Measuring Success</h3>
+                        <p>Performance optimization is meaningless without proper measurement. Learn how to use the latest profiling tools and metrics to validate your improvements.</p>
+                    </div>
+                `
+            },
+            3: {
+                title: "The Future of Web Design: AI and Automation",
+                author: "Emily Rodriguez",
+                date: "June 5, 2025",
+                readTime: "6 min read",
+                image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+                content: `
+                    <div class="article-hero">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="AI Design">
+                    </div>
+                    <h1 class="article-title">The Future of Web Design: AI and Automation</h1>
+                    <div class="article-meta">
+                        <span><i class="fas fa-user"></i> Emily Rodriguez</span>
+                        <span><i class="fas fa-calendar"></i> June 5, 2025</span>
+                        <span><i class="fas fa-clock"></i> 6 min read</span>
+                    </div>
+                    <div class="article-text">
+                        <p>Artificial Intelligence is fundamentally changing how we approach web design, from automated layout generation to intelligent user experience optimization.</p>
+                        
+                        <h3>AI-Powered Design Tools</h3>
+                        <p>The latest generation of design tools incorporates machine learning to help designers work more efficiently:</p>
+                        
+                        <ul>
+                            <li>Automated color palette generation</li>
+                            <li>Intelligent layout suggestions</li>
+                            <li>Content-aware image optimization</li>
+                            <li>Predictive user interface patterns</li>
+                        </ul>
+                        
+                        <h3>The Human Element</h3>
+                        
