@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechVibe - Modern Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 800;
+            background: linear-gradient(45deg, #fff, #f8f9fa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            color: rgba(255,255,255,0.9);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .blog-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .blog-slider {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+        }
+
+        .blog-card {
+            min-width: 100%;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            transform: translateX(0);
+            transition: all 0.3s ease;
+        }
+
+        .blog-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .blog-image {
+            width: 100%;
+            height: 250px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blog-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.3) 100%);
+        }
+
+        .blog-content {
+            padding: 30px;
+        }
+
+        .blog-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .category {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .blog-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .blog-excerpt {
+            color: #4b5563;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .read-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .read-more:hover {
+            color: #764ba2;
+            transform: translateX(5px);
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+        }
+
+        .indicators {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .indicator.active {
+            background: white;
+            transform: scale(1.2);
+        }
+
+        .swipe-hint {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+            margin-top: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.7; }
+            50% { opacity: 1; }
+        }
+
+        @media (min-width: 768px) {
+            .blog-card {
+                display: flex;
+                align-items: center;
+                min-height: 400px;
+            }
+
+            .blog-image {
+                width: 50%;
+                height: 400px;
+            }
+
+            .blog-content {
+                width: 50%;
+                padding: 40px;
+            }
+
+            .blog-title {
+                font-size: 2rem;
+            }
+
+            .swipe-hint {
+                display: none;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .container {
+                padding: 40px;
+            }
+
+            .blog-content {
+                padding: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>TechVibe</h1>
+            <p>Discover the latest in technology and innovation</p>
+        </header>
+
+        <div class="blog-container">
+            <div class="blog-slider" id="blogSlider">
+                <article class="blog-card">
+                    <div class="blog-image" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 250%22><defs><linearGradient id=%22grad1%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23667eea%22/><stop offset=%22100%25%22 style=%22stop-color:%23764ba2%22/></linearGradient></defs><rect width=%22400%22 height=%22250%22 fill=%22url(%23grad1)%22/><circle cx=%22100%22 cy=%22100%22 r=%2240%22 fill=%22rgba(255,255,255,0.1)%22/><circle cx=%22300%22 cy=%22150%22 r=%2260%22 fill=%22rgba(255,255,255,0.1)%22/></svg>')"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category">AI & ML</span>
+                            <span>Dec 15, 2024</span>
+                            <span>5 min read</span>
+                        </div>
+                        <h2 class="blog-title">The Future of Artificial Intelligence in 2025</h2>
+                        <p class="blog-excerpt">Explore the groundbreaking developments in AI technology and how they're reshaping industries worldwide. From neural networks to machine learning applications.</p>
+                        <a href="#" class="read-more">Read Full Article →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 250%22><defs><linearGradient id=%22grad2%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23f093fb%22/><stop offset=%22100%25%22 style=%22stop-color:%23f5576c%22/></linearGradient></defs><rect width=%22400%22 height=%22250%22 fill=%22url(%23grad2)%22/><polygon points=%22150,50 250,50 200,150%22 fill=%22rgba(255,255,255,0.1)%22/><rect x=%22100%22 y=%22180%22 width=%22200%22 height=%2220%22 fill=%22rgba(255,255,255,0.1)%22/></svg>')"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category">Web Dev</span>
+                            <span>Dec 12, 2024</span>
+                            <span>8 min read</span>
+                        </div>
+                        <h2 class="blog-title">Modern Web Development Trends</h2>
+                        <p class="blog-excerpt">Discover the latest frameworks, tools, and methodologies that are defining modern web development. From React to serverless architecture.</p>
+                        <a href="#" class="read-more">Read Full Article →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 250%22><defs><linearGradient id=%22grad3%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%234facfe%22/><stop offset=%22100%25%22 style=%22stop-color:%2300f2fe%22/></linearGradient></defs><rect width=%22400%22 height=%22250%22 fill=%22url(%23grad3)%22/><circle cx=%22200%22 cy=%22125%22 r=%2280%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.2)%22 stroke-width=%224%22/><circle cx=%22200%22 cy=%22125%22 r=%2240%22 fill=%22rgba(255,255,255,0.1)%22/></svg>')"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category">Cybersecurity</span>
+                            <span>Dec 10, 2024</span>
+                            <span>6 min read</span>
+                        </div>
+                        <h2 class="blog-title">Cybersecurity Best Practices for 2025</h2>
+                        <p class="blog-excerpt">Stay ahead of cyber threats with these essential security practices. Learn about zero-trust architecture and advanced threat detection.</p>
+                        <a href="#" class="read-more">Read Full Article →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 250%22><defs><linearGradient id=%22grad4%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23a8edea%22/><stop offset=%22100%25%22 style=%22stop-color:%23fed6e3%22/></linearGradient></defs><rect width=%22400%22 height=%22250%22 fill=%22url(%23grad4)%22/><path d=%22M50,200 Q200,50 350,200%22 fill=%22none%22 stroke=%22rgba(255,255,255,0.2)%22 stroke-width=%223%22/><circle cx=%22100%22 cy=%22150%22 r=%2215%22 fill=%22rgba(255,255,255,0.2)%22/><circle cx=%22300%22 cy=%22100%22 r=%2220%22 fill=%22rgba(255,255,255,0.2)%22/></svg>')"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category">Cloud</span>
+                            <span>Dec 8, 2024</span>
+                            <span>7 min read</span>
+                        </div>
+                        <h2 class="blog-title">Cloud Computing Revolution</h2>
+                        <p class="blog-excerpt">Explore how cloud computing is transforming businesses worldwide. From AWS to Azure, discover the platforms shaping the future.</p>
+                        <a href="#" class="read-more">Read Full Article →</a>
+                    </div>
+                </article>
+
+                <article class="blog-card">
+                    <div class="blog-image" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 250%22><defs><linearGradient id=%22grad5%22 x1=%220%25%22 y1=%220%25%22 x2=%22100%25%22 y2=%22100%25%22><stop offset=%220%25%22 style=%22stop-color:%23ffecd2%22/><stop offset=%22100%25%22 style=%22stop-color:%23fcb69f%22/></linearGradient></defs><rect width=%22400%22 height=%22250%22 fill=%22url(%23grad5)%22/><rect x=%2250%22 y=%2250%22 width=%2280%22 height=%2280%22 fill=%22rgba(255,255,255,0.2)%22 rx=%2210%22/><rect x=%22150%22 y=%2280%22 width=%22100%22 height=%2260%22 fill=%22rgba(255,255,255,0.2)%22 rx=%2210%22/><rect x=%22270%22 y=%2260%22 width=%2280%22 height=%22100%22 fill=%22rgba(255,255,255,0.2)%22 rx=%2210%22/></svg>')"></div>
+                    <div class="blog-content">
+                        <div class="blog-meta">
+                            <span class="category">Mobile</span>
+                            <span>Dec 5, 2024</span>
+                            <span>4 min read</span>
+                        </div>
+                        <h2 class="blog-title">Mobile App Development in 2025</h2>
+                        <p class="blog-excerpt">Discover the latest trends in mobile development, from cross-platform frameworks to progressive web apps and native performance.</p>
+                        <a href="#" class="read-more">Read Full Article →</a>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <button class="nav-btn" id="prevBtn">‹</button>
+            <button class="nav-btn" id="nextBtn">›</button>
+        </div>
+
+        <div class="indicators" id="indicators"></div>
+
+        <p class="swipe-hint">← Swipe to explore more articles →</p>
+    </div>
+
+    <script>
+        const slider = document.getElementById('blogSlider');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const indicatorsContainer = document.getElementById('indicators');
+        
+        let currentSlide = 0;
+        const totalSlides = slider.children.length;
+        let isTransitioning = false;
+        
+        // Touch handling variables
+        let startX, startY, currentX, isDragging = false;
+        let initialTransform = 0;
+
+        // Create indicators
+        for (let i = 0; i < totalSlides; i++) {
+            const indicator = document.createElement('div');
+            indicator.className = 'indicator';
+            indicator.addEventListener('click', () => goToSlide(i));
+            indicatorsContainer.appendChild(indicator);
+        }
+
+        function updateSlider() {
+            if (isTransitioning) return;
+            
+            const translateX = -currentSlide * 100;
+            slider.style.transform = `translateX(${translateX}%)`;
+            
+            // Update indicators
+            document.querySelectorAll('.indicator').forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide);
+            });
+            
+            // Update navigation buttons
+            prevBtn.disabled = currentSlide === 0;
+            nextBtn.disabled = currentSlide === totalSlides - 1;
+        }
+
+        function goToSlide(index) {
+            if (isTransitioning || index < 0 || index >= totalSlides) return;
+            
+            isTransitioning = true;
+            currentSlide = index;
+            updateSlider();
+            
+            setTimeout(() => {
+                isTransitioning = false;
+            }, 500);
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                goToSlide(currentSlide + 1);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                goToSlide(currentSlide - 1);
+            }
+        }
+
+        // Touch events for swipe functionality
+        slider.addEventListener('touchstart', (e) => {
+            if (isTransitioning) return;
+            
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            isDragging = true;
+            initialTransform = -currentSlide * 100;
+            
+            slider.style.transition = 'none';
+        });
+
+        slider.addEventListener('touchmove', (e) => {
+            if (!isDragging || isTransitioning) return;
+            
+            currentX = e.touches[0].clientX;
+            const currentY = e.touches[0].clientY;
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            
+            // Only handle horizontal swipes
+            if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                e.preventDefault();
+                
+                const movePercent = (deltaX / slider.offsetWidth) * 100;
+                const newTransform = initialTransform + movePercent;
+                
+                // Add resistance at boundaries
+                let resistanceTransform = newTransform;
+                if (currentSlide === 0 && deltaX > 0) {
+                    resistanceTransform = newTransform * 0.3;
+                } else if (currentSlide === totalSlides - 1 && deltaX < 0) {
+                    resistanceTransform = newTransform * 0.3 + initialTransform * 0.7;
+                }
+                
+                slider.style.transform = `translateX(${resistanceTransform}%)`;
+            }
+        });
+
+        slider.addEventListener('touchend', (e) => {
+            if (!isDragging) return;
+            
+            isDragging = false;
+            slider.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            
+            const deltaX = currentX - startX;
+            const threshold = slider.offsetWidth * 0.2; // 20% threshold
+            
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX > 0 && currentSlide > 0) {
+                    prevSlide();
+                } else if (deltaX < 0 && currentSlide < totalSlides - 1) {
+                    nextSlide();
+                } else {
+                    updateSlider();
+                }
+            } else {
+                updateSlider();
+            }
+        });
+
+        // Prevent context menu on long press
+        slider.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
+        // Mouse events for desktop dragging
+        let isMouseDown = false;
+
+        slider.addEventListener('mousedown', (e) => {
+            if (isTransitioning) return;
+            
+            isMouseDown = true;
+            startX = e.clientX;
+            initialTransform = -currentSlide * 100;
+            slider.style.transition = 'none';
+            slider.style.cursor = 'grabbing';
+            e.preventDefault();
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isMouseDown || isTransitioning) return;
+            
+            const deltaX = e.clientX - startX;
+            const movePercent = (deltaX / slider.offsetWidth) * 100;
+            const newTransform = initialTransform + movePercent;
+            
+            slider.style.transform = `translateX(${newTransform}%)`;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            if (!isMouseDown) return;
+            
+            isMouseDown = false;
+            slider.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            slider.style.cursor = 'grab';
+            
+            const deltaX = e.clientX - startX;
+            const threshold = slider.offsetWidth * 0.2;
+            
+            if (Math.abs(deltaX) > threshold) {
+                if (deltaX > 0 && currentSlide > 0) {
+                    prevSlide();
+                } else if (deltaX < 0 && currentSlide < totalSlides - 1) {
+                    nextSlide();
+                } else {
+                    updateSlider();
+                }
+            } else {
+                updateSlider();
+            }
+        });
+
+        // Button event listeners
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+            } else if (e.key === 'ArrowRight') {
+                nextSlide();
+            }
+        });
+
+        // Auto-play (optional)
+        let autoPlayInterval;
+        
+        function startAutoPlay() {
+            autoPlayInterval = setInterval(() => {
+                if (currentSlide < totalSlides - 1) {
+                    nextSlide();
+                } else {
+                    goToSlide(0);
+                }
+            }, 5000);
+        }
+
+        function stopAutoPlay() {
+            clearInterval(autoPlayInterval);
+        }
+
+        // Pause auto-play on hover/touch
+        slider.addEventListener('mouseenter', stopAutoPlay);
+        slider.addEventListener('mouseleave', startAutoPlay);
+        slider.addEventListener('touchstart', stopAutoPlay);
+
+        // Initialize
+        updateSlider();
+        startAutoPlay();
+
+        // Handle resize
+        window.addEventListener('resize', () => {
+            updateSlider();
+        });
+    </script>
+</body>
+</html>
